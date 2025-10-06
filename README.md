@@ -5,14 +5,35 @@ This week focuses on understanding how APIs work **from the server side** — bu
 
 ---
 
+## Contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Project Structure](#project-structure)
+- [Setup (Windows)](#setup-windows)
+- [Run](#run)
+- [Configuration (.env)](#configuration-env)
+- [Endpoints](#endpoints)
+- [Testing Examples (PowerShell-safe)](#testing-examples-powershell-safe)
+- [Error Handling](#error-handling)
+- [Logging](#logging)
+- [Tips (PowerShell curl gotchas)](#tips-powershell-curl-gotchas)
+- [Status / Roadmap](#status--roadmap)
+- [License](#license)
+
+---
+
 ## 📚 Overview
 
-The goal of Week 4 is to learn **backend fundamentals** using Flask:
+This project teaches **backend fundamentals with Flask**:
 
-* How an API server handles HTTP methods (GET, POST, etc.)
-* How to return JSON responses, errors, and metadata
-* How to structure and secure a Flask app
-* How to log requests and test locally
+- Route basics (GET/POST)
+- Path params (e.g., `/hello/<name>`, `/square/<int:n>`)
+- Query params (e.g., `/add?a=5&b=9`)
+- JSON body handling (e.g., `POST /echo`)
+- Clean JSON error responses for `404` and `500` (optional global `400`)
+- Request logging (rotating logs + simple access log)
+- Safe configuration (no secrets in git; `.env.example` only)
 
 This project replaces the earlier “Weather CLI” and “Node.js CLI” weeks by switching perspective: instead of calling APIs, you *build one.*
 
@@ -46,12 +67,15 @@ This project replaces the earlier “Weather CLI” and “Node.js CLI” weeks 
 ```
 Week 4 - Flask API/
 │
-├── app.py              # Main Flask application
-├── config.py           # App configuration (version, debug mode, etc.)
-├── .gitignore          # Excludes venv, logs, env files
-├── .env.example        # Example environment variable template
-├── README.md           # This file
-└── data/               # (Optional) Logs or sample data folder
+├─ app.py # Flask app (routes, errors, logging hooks)
+├─ config.py # Config object (VERSION, DEBUG, APP_NAME, OPENWEATHER_KEY, JSON_SORT_KEYS)
+├─ README.md
+├─ .gitignore # ignores .venv, pycache, logs, .env, data logs
+├─ .env.example # placeholder env file (do not put real keys here)
+├─ requirements.txt # optional; can also pip install directly
+├─ logs/ # rotating file logs (created at runtime)
+└─ data/
+└─ access.log # simple text access log (appends per request)
 ```
 
 ---
@@ -67,22 +91,33 @@ pip install flask python-dotenv
 
 # 3. Run the app
 python app.py
-```
-
-Visit → [http://127.0.0.1:5000](http://127.0.0.1:5000)
+# Server: http://127.0.0.1:5000
+'''
 
 ---
 
 ## 🧩 Example Routes
 
-| Route      | Method | Description                                  |
-| ---------- | ------ | -------------------------------------------- |
-| `/`        | GET    | Home route confirming the server is live     |
-| `/health`  | GET    | Returns uptime and version info              |
-| `/meta`    | GET    | Returns app metadata (author, version, docs) |
-| `/boom`    | GET    | Triggers a test 500 error with clean JSON    |
-| `/headers` | GET    | Returns request headers for debugging        |
+| Route             | Method   | Purpose               | Notes / Example                                                      |
+| ----------------- | -------- | --------------------- | -------------------------------------------------------------------- |
+| `/`               | GET      | Liveness JSON         | → `{"message":"Week 4 Flask API is live"}`                           |
+| `/health`         | GET      | Uptime + version      | Uses app start time + `VERSION`                                      |
+| `/meta`           | GET      | App metadata          | Includes `APP_NAME`, `VERSION`, server time, docs                    |
+| `/demo`           | GET/POST | Simple method echo    | GET → ready, POST → received                                         |
+| `/list`           | GET      | Array → JSON          | `{"numbers":[1,2,3], ...}`                                           |
+| `/status`         | GET      | Custom status code    | Returns `201`                                                        |
+| `/headers`        | GET      | Request headers (dev) | Debug only; consider guarding in prod                                |
+| `/hello/<name>`   | GET      | **Path param** demo   | `/hello/James`                                                       |
+| `/square/<int:n>` | GET      | **Typed** path param  | `/square/7` → `{"number":7,"squared":49}`                            |
+| `/add`            | GET      | **Query** params demo | `/add?a=5&b=9` → `{"operation":"add","a":5.0,"b":9.0,"result":14.0}` |
+| `/echo`           | POST     | **JSON body** echo    | Body: `{"msg":"hi"}` → echoes JSON                                   |
 
+## Error Handling
+
+404 → {"error":"Route not found", "hint":"Check your endpoint name"}
+500 → {"error":"Internal server error"} (and logs the exception)
+(Optional) 400 global handler for bad input:
+If you add a global 400/BadRequest handler, invalid query/body parsing stays consistent as JSON.
 ---
 
 ## 🛡️ Security Practices
@@ -96,10 +131,11 @@ Visit → [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
 ## 🧱️ Next Steps
 
-* [ ] Add `/math/add`, `/math/subtract`, `/math/multiply` routes (Day 2)
-* [ ] Accept query and JSON body params
-* [ ] Learn structured response models (status, data, message)
-* [ ] Push new feature branches safely to GitHub org
+✅ Day 1: Base Flask app, JSON 404/500, logging, metadata
+✅ Day 2: Path params, query params, POST JSON echo
+🔜 Day 3: /weather/<city> using OpenWeather + .env
+🔜 Day 4: Serve CSV history (/history, filters)
+🔜 Day 5: POST validation & schema-style responses
 
 ---
 
