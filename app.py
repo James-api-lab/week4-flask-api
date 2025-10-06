@@ -3,13 +3,18 @@ import time
 import logging
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
+from werkzeug.exceptions import BadRequest
+
 
 from flask import Flask, request, jsonify, url_for
 from dotenv import load_dotenv
+from config import Config
+
 
 load_dotenv()
 
 app = Flask(__name__)
+app.config.from_object(Config)
 start_time = time.time()
 
 # ----- Config -------------------------------------------------
@@ -39,16 +44,32 @@ def log_request():
 os.makedirs("data", exist_ok=True)
 LOG_PATH = "data/access.log"
 
+
+
 @app.after_request
 def log_after(response):
     with open(LOG_PATH, "a", encoding="utf-8") as f:
         f.write(f"{datetime.now()} | {request.method} {request.path} {response.status_code}\n")
     return response
 
+def require_float(name: str) -> float:
+    val = request.args.get(name)
+    if val is None:
+        raise BadRequest(f"Missing query param '{name}'")
+    try:
+        return float(val)
+    except ValueError:
+        raise BadRequest(f"Query param '{name}' must be a number")
+
 # ----- Routes -------------------------------------------------
 @app.route("/")
 def home():
     return jsonify(message="Week 4 Flask API is live")
+
+@app.errorhandler(BadRequest)
+@app.errorhandler(400)
+def bad_request(e):
+    return jsonify(error="Bad request", hint="Check your query/body params"), 400
 
 @app.route("/health")
 def health():
@@ -91,8 +112,10 @@ def status_code():
 
 @app.route("/headers")
 def headers():
-    # caution: exposes headers; use only for learning
+    if not app.debug:
+        return jsonify(error="Not available in production"), 403
     return jsonify(dict(request.headers))
+
 
 @app.errorhandler(500)
 def server_error(e):
@@ -116,16 +139,8 @@ def square_number(n):
 # QUERY PARAMS: optional modifiers
 @app.route("/add")
 def add_numbers():
-    """Adds ?a= and ?b= query parameters."""
-    a_str = request.args.get("a")
-    b_str = request.args.get("b")
-    if a_str is None or b_str is None:
-        return jsonify(error="Missing query params 'a' and/or 'b'"), 400
-    try:
-        a = float(a_str)
-        b = float(b_str)
-    except ValueError:
-        return jsonify(error="Params must be numbers"), 400
+    a = require_float("a")
+    b = require_float("b")
     return jsonify(operation="add", a=a, b=b, result=a + b)
 
 # POST BODY: JSON payload
