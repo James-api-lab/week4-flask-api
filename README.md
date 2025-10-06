@@ -1,7 +1,5 @@
 # Week 4 — Flask API (Weather & History Microservice)
 
-# Week 4 — Flask API
-
 A simple Flask API project built as part of my API Learning Series (Week 4).
 This week focuses on understanding how APIs work **from the server side** — building and running your own REST endpoints instead of just consuming them.
 
