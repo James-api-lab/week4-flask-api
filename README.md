@@ -5,9 +5,9 @@
 
 ## 🧩 Project Overview
 This week’s project transitions from CLI-based API exploration to **Flask-based web services**.  
-We’re learning how to build real REST endpoints that return JSON, handle errors, and integrate live data.
+I am learning how to build real REST endpoints that return JSON, handle errors, and integrate live data.
 
-By the end of Week 4, you’ll have:
+By the end of Week 4, I will have:
 - A functioning Flask API with live weather data
 - Proper routing, logging, caching, and persistence
 - Modular config and error handling
@@ -38,7 +38,7 @@ By the end of Week 4, you’ll have:
 ## ⚙️ Configuration
 
 ### `.env`
-Your environment file must live next to `app.py`:
+The environment file must live next to `app.py`:
 ```
 OPENWEATHER_API_KEY=your_api_key_here
 ```
