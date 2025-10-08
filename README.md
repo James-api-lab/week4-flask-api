@@ -1,121 +1,91 @@
-# Week 4 — Flask API  
-> Part of the API Learning Series (Python → Flask)
+# Week 4 – Flask API
+
+## Overview
+This week you built your first **Flask-based microservice** — a small, production-style REST API that logs, caches, and serves weather data.  
+It marks the transition from CLI-based tools into **server-based API design**.
 
 ---
 
-## 🧩 Project Overview
-This week’s project transitions from CLI-based API exploration to **Flask-based web services**.  
-I am learning how to build real REST endpoints that return JSON, handle errors, and integrate live data.
-
-By the end of Week 4, I will have:
-- A functioning Flask API with live weather data
-- Proper routing, logging, caching, and persistence
-- Modular config and error handling
-- A foundation for future visualization (Day 5)
-
----
-
-## 🧱 Current Features (Days 1–3)
-
-| Category | Endpoint | Description |
-|-----------|-----------|-------------|
-| **Core** | `/` | Root “API live” message |
-|  | `/health` | Uptime and version |
-|  | `/meta` | App metadata and cache count |
-| **Demo Routes** | `/hello/<name>` | Path parameter example |
-|  | `/square/<int:n>` | Type-converted path parameter |
-|  | `/add?a=5&b=9` | Query parameters |
-|  | `/echo` *(POST JSON)* | Echoes the request body |
-|  | `/headers` | Debug view of request headers |
-| **Weather** | `/weather/<city>` | Single city weather (OpenWeather API) |
-|  | `/weather?cities=Seattle,Paris,...` | Bulk fetch multiple cities concurrently |
-| **Logging** | `logs/app.log` | Rotating runtime log |
-|  | `data/access.log` | Simple HTTP request audit trail |
-|  | `data/weather_log.csv` | CSV persistence of weather history |
-
----
-
-## ⚙️ Configuration
-
-### `.env`
-The environment file must live next to `app.py`:
+## Project Structure
 ```
-OPENWEATHER_API_KEY=your_api_key_here
-```
-
-### `config.py`
-```python
-import os
-
-class Config:
-    VERSION = "0.1"
-    DEBUG = True
-    APP_NAME = "Week 4 Flask API"
-    JSON_SORT_KEYS = False
-    OPENWEATHER_KEY = os.getenv("OPENWEATHER_API_KEY")
+Week 4 - Flask API/
+│
+├── app.py                # Main Flask app (routes, logging, caching)
+├── config.py             # Configuration class
+├── .env.example          # Example environment variables
+├── data/
+│   ├── access.log        # Text access log of all requests
+│   ├── weather_log.csv   # Historical weather data
+│
+├── logs/
+│   └── app.log           # Rotating log handler (1MB x 3 files)
+│
+└── README.md             # This file
 ```
 
 ---
 
-## 🧠 How It Works
+## Endpoints Summary
 
-### 1. Request Flow
-```
-Browser / Curl  →  Flask Routes  →  Cache Check  →  OpenWeather API  →  Log + Return
-```
+| Endpoint | Method | Description |
+|-----------|--------|-------------|
+| `/` | GET | Basic API heartbeat |
+| `/health` | GET | Returns uptime + version |
+| `/meta` | GET | Shows app config metadata |
+| `/hello/<name>` | GET | Dynamic greeting using path params |
+| `/square/<int:n>` | GET | Example path param with type conversion |
+| `/add?a=1&b=2` | GET | Example query params |
+| `/echo` | POST | Echoes back JSON body |
+| `/weather/<city>` | GET | Fetch current weather for one city |
+| `/weather?cities=Seattle,Tokyo` | GET | Fetch multiple cities concurrently |
+| `/history?city=Seattle&limit=7` | GET | Retrieve recent weather rows |
+| `/history/daily` | GET | Summarized daily averages |
+| `/chart/view` | GET | Redirects to QuickChart chart image |
+| `/chart/html` | GET | Simple HTML page rendering a chart |
 
-### 2. Error Handling
-All errors are returned as **clean JSON**:
-```json
-{
-  "error": "Bad request",
-  "detail": "Missing query param 'a'"
-}
-```
+---
 
-### 3. Example Calls
+## Features Implemented
+- ✅ Config via `.env` (OpenWeather key)
+- ✅ Structured logging to `/logs` and `/data`
+- ✅ Error handling (400/404/500)
+- ✅ JSON request + response bodies
+- ✅ In-memory caching with TTL
+- ✅ CSV persistence (`data/weather_log.csv`)
+- ✅ Concurrent bulk city fetch
+- ✅ QuickChart integration for visual history
+
+---
+
+## Usage
+
+**Run the server:**
 ```bash
-# Single city
-curl.exe "http://127.0.0.1:5000/weather/Seattle"
+flask --app app run
+```
 
-# Bulk fetch (concurrent)
-curl.exe "http://127.0.0.1:5000/weather?cities=Seattle,Tokyo,Paris"
-
-# Add numbers
-curl.exe "http://127.0.0.1:5000/add?a=5&b=9"
-
-# JSON echo
-curl.exe -X POST "http://127.0.0.1:5000/echo" -H "Content-Type: application/json" -d "{\"msg\":\"hi\"}"
+**Example requests (PowerShell):**
+```powershell
+iwr "http://127.0.0.1:5000/weather/Seattle"
+iwr "http://127.0.0.1:5000/weather?cities=Seattle,Miami,Paris"
+start http://127.0.0.1:5000/chart/view?city=Seattle&limit=7
 ```
 
 ---
 
-## 📂 Logs & Data
-All runtime artifacts are stored locally:
-
-| File | Purpose |
-|------|----------|
-| `logs/app.log` | Rotating Flask event log |
-| `data/access.log` | Request summary per hit |
-| `data/weather_log.csv` | Persisted weather history |
+## Next Steps
+- Add authentication headers
+- Introduce pagination and `per_page` params
+- Deploy to Render or Railway
+- Replace local CSV with SQLite for persistence
 
 ---
 
-## 🪶 Learning Goals
-- Understand how a Python web framework translates HTTP requests into data responses.
-- Learn to safely integrate live APIs.
-- Build reusable helpers for caching, logging, and configuration.
-- See how JSON-first design simplifies testing and client integration.
+© 2025 James Gilmore | API Learning Journey Week 4
 
----
-
-## 🚀 Next Steps (Day 4–5)
-- `/history` endpoint → Read and summarize CSV logs  
-- `/chart` endpoint → Generate trend graphs with QuickChart.io  
-- Optional: SQLite persistence layer + unit tests  
-
----
 
 **Author:** James Gilmore  
 **Organization:** [James API Lab](https://github.com/James-api-lab)  
 **License:** MIT
+
+
